@@ -1,1 +1,3 @@
 # vueflasky-myblog
+
+LICENSE
