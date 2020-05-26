@@ -2,7 +2,7 @@
 # 这是我的基于FLask+Vue.js 前后分离实现的微型博客
 
 ## 1.如何使用
-git clone git@github.com:Sunnywillow/vueflasky-myblog.git
+```git clone https://github.com/Sunnywillow/vueflasky-myblog.git```
 
 ## 2.后端Backend
 $ mkdir backend / cd backend  在命令行中先创建一个文件夹
@@ -19,8 +19,8 @@ $ venv\Scripts\activate Windows系统 激活虚拟环境 (Linux:source venv/bin/
 
 ### 创建一个.env环境变量文件
 
-FLASK_APP=madblog.py
-FLASK_DEBUG=1
+```FLASK_APP=madblog.py
+FLASK_DEBUG=1```
 
 (venv)$ flask run
 
