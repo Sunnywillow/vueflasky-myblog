@@ -1,3 +1,6 @@
+
+这是我的基于FLask+Vue.js 前后分离实现的微型博客
+
 # 1.如何使用
 git clone git@github.com:Sunnywillow/vueflasky-myblog.git
 
