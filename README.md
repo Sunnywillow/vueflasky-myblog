@@ -1,5 +1,5 @@
 # 1.如何使用
-git clone 当前地址
+git clone git@github.com:Sunnywillow/vueflasky-myblog.git
 
 # 2.后端Backend
 $ mkdir backend / cd backend  在命令行中先创建一个文件夹
