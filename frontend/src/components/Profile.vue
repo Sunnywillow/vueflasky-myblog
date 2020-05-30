@@ -1,115 +1,119 @@
 <template>
-  <div class="container">
-    <alert
-      v-if="sharedState.is_new"
-      v-bind:variant="alertVariant"
-      v-bind:message="alertMessage">
-    </alert>
-    <h1>Sign In</h1>
-    <div class="row">
-      <div class="col-md-4">
-        <form @submit.prevent="onSubmit">
-          <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" v-model="loginForm.username" class="form-control" v-bind:class="{'is-invalid': loginForm.usernameError}" id="username" placeholder="">
-            <div v-show="loginForm.usernameError" class="invalid-feedback">{{ loginForm.usernameError }}</div>
+  <section>
+    <div class="container">
+      <div class="g-brd-around g-brd-gray-light-v4 g-pa-20 g-mb-40">
+        <div class="row">
+          <div class="col-sm-3 g-mb-40 g-mb-0--lg">
+            <!-- User Image -->
+            <div class="g-mb-20">
+              <img v-if="user._links.avatar" class="img-fluid w-100" v-bind:src="user._links.avatar" alt="Image Description">
+            </div>
+            <!-- User Image -->
+
+            <!-- Actions -->
+            <router-link v-if="$route.params.id == sharedState.user_id" v-bind:to="{ name: 'EditProfile' }" class="btn btn-block u-btn-outline-primary g-rounded-50 g-py-12 g-mb-10">
+              <i class="icon-user-follow g-pos-rel g-top-1 g-mr-5"></i> Edit Profile
+            </router-link>
+            <!-- End Actions -->
+
           </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" v-model="loginForm.password" class="form-control" v-bind:class="{'is-invalid': loginForm.passwordError}" id="password" placeholder="">
-            <div v-show="loginForm.passwordError" class="invalid-feedback">{{ loginForm.passwordError }}</div>
+
+          <div class="col-sm-9">
+            <!-- Username -->
+            <div class="d-flex align-items-center justify-content-sm-between g-mb-5">
+              <h2 v-if="user.name" class="g-font-weight-300 g-mr-10">{{ user.name }}</h2>
+              <h2 v-else class="g-font-weight-300 g-mr-10">{{ user.username }}</h2>
+            </div>
+            <!-- End Username -->
+
+            <!-- Member since -->
+            <h4 v-if="user.member_since" class="h6 g-font-weight-300 g-mb-10">
+              <i class="icon-badge g-pos-rel g-top-1 g-color-gray-dark-v5 g-mr-5"></i> Member since : {{ $moment(user.member_since).format('LLL') }}
+            </h4>
+            <!-- End Member since -->
+
+            <!-- Last seen -->
+            <h4 v-if="user.last_seen" class="h6 g-font-weight-300 g-mb-10">
+              <i class="icon-eye g-pos-rel g-top-1 g-color-gray-dark-v5 g-mr-5"></i> Last seen : {{ $moment(user.last_seen).fromNow() }}
+            </h4>
+            <!-- End Last seen -->
+
+            <!-- User Info -->
+            <ul class="list-inline g-font-weight-300">
+              <li class="list-inline-item g-mr-20">
+                <i class="icon-check g-pos-rel g-top-1 g-color-gray-dark-v5 g-mr-5"></i> Verified User
+              </li>
+              <li v-if="user.email" class="list-inline-item g-mr-20">
+                <i class="icon-link g-pos-rel g-top-1 g-color-gray-dark-v5 g-mr-5"></i>  <a class="g-color-main g-color-primary--hover" v-bind:href="'mailto:' + user.email">{{ user.email }}</a>
+              </li>
+            </ul>
+            <!-- End User Info -->
+
+            <!-- Location -->
+            <h4 v-if="user.location" class="h6 g-font-weight-300 g-mb-10">
+              <i class="icon-location-pin g-pos-rel g-top-1 g-color-gray-dark-v5 g-mr-5"></i> {{ user.location }}
+            </h4>
+            <!-- End Location -->
+
+            <div v-if="user.about_me">
+              <div class="u-divider u-divider-db-dashed u-divider-center g-brd-gray-light-v2 g-mt-50 g-mb-20">
+                <i class="u-divider__icon u-divider__icon--indented g-bg-gray-light-v4 g-color-gray-light-v1 rounded-circle">Me</i>
+              </div>
+              <p class="lead g-line-height-1_8">{{ user.about_me }}</p>
+            </div>
+
+
           </div>
-          <button type="submit" class="btn btn-primary">Sign In</button>
-        </form>
+        </div>
       </div>
     </div>
-    <br>
-    <p>New User? <router-link to="/register">Click to Register!</router-link></p>
-    <p>
-        Forgot Your Password?
-        <a href="#">Click to Reset It</a>
-    </p>
-  </div>
+  </section>
 </template>
 
 <script>
-import axios from 'axios'
-import Alert from './Alert'
 import store from '../store.js'
 
 export default {
-  name: 'Login',  //this is the name of the component
-  components: {
-    alert: Alert
-  },
+  name: 'Profile',  //this is the name of the component
   data () {
     return {
       sharedState: store.state,
-      alertVariant: 'info',
-      alertMessage: 'Congratulations, you are now a registered user !',
-      loginForm: {
+      user: {
         username: '',
-        password: '',
-        submitted: false,  // 是否点击了 submit 按钮
-        errors: 0,  // 表单是否在前端验证通过，0 表示没有错误，验证通过
-        usernameError: null,
-        passwordError: null
+        email: '',
+        name: '',
+        location: '',
+        about_me: '',
+        member_since: '',
+        last_seen: '',
+        _links: {
+          self: '',
+          avatar: ''
+        }
       }
     }
   },
   methods: {
-    onSubmit (e) {
-      this.loginForm.submitted = true  // 先更新状态
-      this.loginForm.errors = 0
-
-      if (!this.loginForm.username) {
-        this.loginForm.errors++
-        this.loginForm.usernameError = 'Username required.'
-      } else {
-        this.loginForm.usernameError = null
-      }
-
-      if (!this.loginForm.password) {
-        this.loginForm.errors++
-        this.loginForm.passwordError = 'Password required.'
-      } else {
-        this.loginForm.passwordError = null
-      }
-
-      if (this.loginForm.errors > 0) {
-        // 表单验证没通过时，不继续往下执行，即不会通过 axios 调用后端API
-        return false
-      }
-
-      const path = 'http://localhost:5000/api/tokens'
-      // axios 实现Basic Auth需要在config中设置 auth 这个属性即可
-      axios.post(path, {}, {
-        auth: {
-          'username': this.loginForm.username,
-          'password': this.loginForm.password
-        }
-      }).then((response) => {
-          // handle success
-          window.localStorage.setItem('myblog-token', response.data.token)
-          store.resetNotNewAction()
-          store.loginAction()
-
-          if (typeof this.$route.query.redirect == 'undefined') {
-            this.$router.push('/')
-          } else {
-            this.$router.push(this.$route.query.redirect)
-          }
+    getUser (id) {
+      const path = `/users/${id}`
+      this.$axios.get(path)
+        .then((response) => {
+          this.user = response.data
         })
         .catch((error) => {
-          // handle error
-          if (error.response.status == 401) {
-            this.loginForm.usernameError = 'Invalid username or password.'
-            this.loginForm.passwordError = 'Invalid username or password.'
-          } else {
-            console.log(error.response)
-          }
-        })
+          // eslint -disable-next-line
+          console.error(error)
+        });
     }
+  },
+  created () {
+    const user_id = this.$route.params.id
+    this.getUser(user_id)
+  },
+  // 当 id 变化后重新加载数据
+  beforeRouteUpdate (to, form, next) {
+    this.getUser(to.params.id)
+    next()
   }
 }
 </script>

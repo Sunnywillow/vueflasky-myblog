@@ -1,0 +1,21 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>未知 </title></head><body>
+<h1 id="flaskvuejs">这是我的基于Flask+Vue.js 前后分离实现的微型博客</h1>
+<h2 id="1">1.如何使用</h2>
+<p>git clone https://github.com/Sunnywillow/vueflasky-myblog.git</p>
+<h2 id="2backend">2.后端Backend</h2>
+<p>$ mkdir backend / cd backend  在命令行中先创建一个文件夹</p>
+<p>$ python -m venv venv  创建python3虚拟环境</p>
+<p>$ venv\Scripts\activate Windows系统 激活虚拟环境 (Linux:source venv/bin/activate)</p>
+<p>(venv)$ pip install -r requirements.txt</p>
+<h3 id="flask-migrate">使用Flask-migrate创建数据库迁移脚本</h3>
+<p>(venv)$ flask db upgrade</p>
+<h3 id="env">创建一个.env环境变量文件</h3>
+<p>FLASK_APP=madblog.py
+FLASK_DEBUG=1</p>
+<p>(venv)$ flask run</p>
+<h2 id="3frontend">3.前端frontend</h2>
+<p>$ cd front-end
+$ npm install
+$ npm run dev</p>
+<p>浏览器访问: http://localhost:8080</p>
+</body></html>
