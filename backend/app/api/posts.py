@@ -27,7 +27,6 @@ def create_post():
     # 最后验证一下messge列表是否为真
     if message:
         return bad_request(message)
-
     # 生成post实例
     post = Post()
     # 将表单中的数据变成post的属性
@@ -38,7 +37,7 @@ def create_post():
     db.session.add(post)
     db.session.commit()
     # todict使post的属性变成字典 再变成json格式赋值给response
-    response = jsonify(post.todict())
+    response = jsonify(post.to_dict())
     response.status_code = 201
     # HTTP协议要求201响应包含一个值为新资源URL的Location头部
     response.headers['Location'] = url_for('api.get_post', id=post.id)

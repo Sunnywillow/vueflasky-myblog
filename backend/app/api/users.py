@@ -1,23 +1,22 @@
 import re
+from flask import request, jsonify, url_for, g
 from app.api import bp
 from app.api.auth import token_auth
-from flask import request, jsonify, url_for, g
-from app.api.errors import bad_request
-from app.models import User
+from app.api.errors import bad_request, error_response
 from app.extensions import db
+from app.models import User
 
 
 @bp.route('/users', methods=['POST'])
 def create_user():
-    '''注册一个用户'''
-    # 从request中拿到json数据
+    '''注册一个新用户'''
     data = request.get_json()
     if not data:
         return bad_request('You must post JSON data.')
 
     message = {}
     if 'username' not in data or not data.get('username', None):
-        message['username'] = 'Please provide a valid username'
+        message['username'] = 'Please provide a valid username.'
     pattern = '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     if 'email' not in data or not re.match(pattern, data.get('email', None)):
         message['email'] = 'Please provide a valid email address.'
@@ -27,7 +26,7 @@ def create_user():
     if User.query.filter_by(username=data.get('username', None)).first():
         message['username'] = 'Please use a different username.'
     if User.query.filter_by(email=data.get('email', None)).first():
-        message['email'] = 'Please provide a different email.'
+        message['email'] = 'Please use a different email address.'
     if message:
         return bad_request(message)
 
@@ -45,7 +44,7 @@ def create_user():
 @bp.route('/users', methods=['GET'])
 @token_auth.login_required
 def get_users():
-    '''返回所有用户的集合'''
+    '''返回用户集合，分页'''
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
     data = User.to_collection_dict(User.query, page, per_page, 'api.get_users')
@@ -58,11 +57,12 @@ def get_user(id):
     '''返回一个用户'''
     user = User.query.get_or_404(id)
     if g.current_user == user:
-        return jsonify(User.query.get_or_404id).to_dict(include_email=True)
-    return jsonify(User.query.get_or_404(id).to_dict())
+        return jsonify(user.to_dict(include_email=True))
+    return jsonify(user.to_dict())
 
 
 @bp.route('/users/<int:id>', methods=['PUT'])
+@token_auth.login_required
 def update_user(id):
     '''修改一个用户'''
     user = User.query.get_or_404(id)
@@ -71,7 +71,6 @@ def update_user(id):
         return bad_request('You must post JSON data.')
 
     message = {}
-    # 如果data中已经存在username且data中没有username
     if 'username' in data and not data.get('username', None):
         message['username'] = 'Please provide a valid username.'
 
@@ -89,15 +88,18 @@ def update_user(id):
     if message:
         return bad_request(message)
 
-    # 将前端的json实例对象的值存入data
     user.from_dict(data, new_user=False)
     db.session.commit()
-    # 返回json数据给前端
     return jsonify(user.to_dict())
 
 
 @bp.route('/users/<int:id>', methods=['DELETE'])
+@token_auth.login_required
 def delete_user(id):
     '''删除一个用户'''
-    pass
-
+    user = User.query.get_or_404(id)
+    if g.current_user != user:
+        return error_response(403)
+    db.session.delete(user)
+    db.session.commit()
+    return '', 204

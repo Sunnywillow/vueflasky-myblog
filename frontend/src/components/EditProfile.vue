@@ -27,21 +27,20 @@
 import store from '../store'
 
 export default {
-  name: 'EditProfile', //this is the name of the component
+  name: 'EditProfile',  //this is the name of the component
   data () {
     return {
       sharedState: store.state,
       profileForm: {
         name: '',
         location: '',
-        about_me: '',
-        submitted: false  // 是否点击了 submit 按钮
+        about_me: ''
       }
     }
   },
   methods: {
     getUser (id) {
-      const path = `/users/${id}`
+      const path = `/api/users/${id}`
       this.$axios.get(path)
         .then((response) => {
           this.profileForm.name = response.data.name
@@ -53,9 +52,9 @@ export default {
           console.error(error)
         });
     },
-    OnSubmit (e) {
+    onSubmit (e) {
       const user_id = this.sharedState.user_id
-      const path = `/users/${user_id}`
+      const path = `/api/users/${user_id}`
       const payload = {
         name: this.profileForm.name,
         location: this.profileForm.location,
@@ -64,7 +63,7 @@ export default {
       this.$axios.put(path, payload)
         .then((response) => {
           // handle success
-          this.$toasted.success('Succeed modify your profile.', { icon: 'fingerprint' })
+          this.$toasted.success('Successed modify your profile.', { icon: 'fingerprint' })
           this.$router.push({
             name: 'Profile',
             params: { id: user_id }
