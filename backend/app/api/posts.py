@@ -111,7 +111,7 @@ def delete_post(id):
     # 验证身份
     if g.current_user != post.author:
         return error_response(403)
-    db.session.delete(id)
+    db.session.delete(post)
     db.session.commit()
     return '', 204
 
