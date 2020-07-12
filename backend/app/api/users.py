@@ -4,7 +4,7 @@ from app.api.auth import token_auth
 from flask import request, jsonify, url_for, g
 from app.api.errors import bad_request
 from app.models import User
-from app import db
+from app.extensions import db
 
 
 @bp.route('/users', methods=['POST'])

@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db
+from app.extensions import db
 from flask import url_for, current_app
 from datetime import datetime, timedelta
 import jwt
@@ -30,6 +30,7 @@ class PaginatedAPIMixin(object):
 
 
 class User(PaginatedAPIMixin, db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
@@ -39,6 +40,11 @@ class User(PaginatedAPIMixin, db.Model):
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+    # 一对多 字段名,作者,
+    # 反向引用，直接查询出当前用户的所有博客文章; 同时，Post实例中会有 author 属性
+    # cascade 用于级联删除，当删除user时，该user下面的所有posts都会被级联删除
+    posts = db.relationship('Post', backref='author', lazy='dynamic',
+                            cascade='all, delete-orphan')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)  # 添加打印对象
@@ -73,15 +79,16 @@ class User(PaginatedAPIMixin, db.Model):
             data['email'] = self.email
         return data
 
+    # 将表单里填写的信息变成实例的属性
     def from_dict(self, data, new_user=True):  # 默认新用户为真
         for field in ['username', 'email', 'name', 'location', 'about_me']:  # 遍历表单中的username 和 email
-            # 如果 前端发送过来的表单中的数据 存在于data中
+            # 如果 data中 有存在得字段
             if field in data:
-                # 将对应的json实例的field值存入data中
+                # 将值设置成实例对应的field属性
                 setattr(self, field, data[field])
         # 如果还是新用户 且 有设置密码
         if new_user and 'password' in data:
-            # 将密码字段也加入到data中(set_password为hash值)
+            # 将密码字段也设置成属性
             self.set_password(data['password'])
 
     def ping(self):
@@ -117,4 +124,18 @@ class User(PaginatedAPIMixin, db.Model):
         return  User.query.get(payload.get('user_id'))  # 返回user_id
 
 
+class Post(PaginatedAPIMixin, db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    summary = db.Column(db.Text)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    views = db.Column(db.Integer, default=0)
+    # 外键, 直接操纵数据库当user下面有posts时不允许删除user，下面仅仅是 ORM-level “delete” cascade
+    # db.ForeignKey('users.id', ondelete='CASCADE') 会同时在数据库中指定 FOREIGN KEY level “ON DELETE” cascade
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    def __repr__(self):
+        return '<Post {}>'.format(self.title)
 
