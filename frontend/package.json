@@ -16,7 +16,7 @@
     "bootstrap": "^4.5.0",
     "highlight.js": "^10.1.1",
     "jquery": "^3.5.1",
-    "moment": "^2.26.0",
+    "moment": "^2.29.2",
     "popper.js": "^1.16.1",
     "vue": "^2.5.2",
     "vue-markdown": "^2.2.4",
